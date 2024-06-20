@@ -1,0 +1,501 @@
+openapi: 3.0.3
+info:
+  title: Book Management System
+  description: This is a ***Book Management api***
+  termsOfService: https://github.com/Just-StyX
+  contact:
+    email: myemail@email.com
+  license:
+    name: JSL
+    url: https://github.com/Just-StyX
+  version: 1.0.0
+externalDocs:
+  description: Documentation for api services
+  url: https://github.com/Just-StyX
+servers:
+  - url: https://github.com/Just-StyX
+tags:
+  - name: book
+    description: The book must have an author and isbn
+    externalDocs:
+      description: Check amazon online
+      url: https://amazon.com/books
+  - name: review
+    description: Reviews about the Book
+  - name: user
+    description: User description
+
+paths:
+  /api/v1/books:
+    post:
+      tags:
+        - book
+      summary: Creates a new Book and persists it in the database
+      description: Creates a new Book and persists it and return with id location by admin
+      operationId: createANewBook
+      requestBody:
+        description: Book object
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Book'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+      responses:
+        201:
+          description: Book created successfully
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Book'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+    get:
+      tags:
+        - book
+      summary: Get all books from repository
+      description: This must return all books from database. Uses pagination in the implementation
+      operationId: getAllBooks
+      parameters:
+        - in: query
+          name: pageNumber
+          schema:
+            type: integer
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: size
+          schema:
+            type: integer
+          description: The numbers of items to return
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+        204:
+          description: Unavailable data
+          content: {}
+  /api/v1/books/{bookId}:
+    put:
+      tags:
+        - book
+      summary: Update Book
+      description: Update Book by admin
+      operationId: updateBookById
+      parameters:
+        - name: bookId
+          in: path
+          description: Book Identifier
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Book object
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Book'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+      responses:
+        204:
+          description: Book created successfully
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Book'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+
+  /api/v1/{userId}/books:
+    get:
+      tags:
+        - book
+      summary: Get all books owned by the user from repository
+      description: This must return all books from database belonging to the user. Uses pagination in the implementation
+      operationId: getBooksByUserId
+      parameters:
+        - name: userId
+          in: path
+          description: User Identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+        404:
+          description: User Identifier is not available
+          content: {}
+
+  /api/v1/{userId}/books/{bookId}:
+    get:
+      tags:
+        - book
+      summary: User return an owned book
+      description: Returns a given book owned by the user from the repository
+      operationId: getBooksByUserIdAndBookId
+      parameters:
+        - name: userId
+          in: path
+          description: User Identifier
+          required: true
+          schema:
+            type: string
+        - name: bookId
+          in: path
+          description: Book Identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: If item exists in cart
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Book'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        404:
+          description: Given Book (product) ID doesn't exist
+          content: {}
+    post:
+      tags:
+        - book
+      summary: Transfer book to user
+      description: Transfer book to user by admin
+      operationId: transferBooksByUserIdAndBookId
+      parameters:
+        - name: userId
+          in: path
+          description: User Identifier
+          required: true
+          schema:
+            type: string
+        - name: bookId
+          in: path
+          description: Book Identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: If book exist in repository
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Book'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        404:
+          description: Given Book (product) ID doesn't exist
+          content: {}
+    delete:
+      tags:
+        - book
+      summary: Delete book owned by user
+      description: Deletes the book from repository owned by user
+      operationId: deleteByUserId
+      parameters:
+        - name: userId
+          in: path
+          description: User Identifier
+          required: true
+          schema:
+            type: string
+        - name: bookId
+          in: path
+          description: Book Identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        202:
+          description: Accepts the request, regardless of whether the specified item exists in the cart or not.
+  /api/v1/{userId}/{bookId}/reviews:
+    post:
+      tags:
+        - review
+      summary: User post review
+      description: User is only able to post if signed in
+      operationId: postReviewByUserId
+      parameters:
+        - name: userId
+          in: path
+          description: User Identifier
+          required: true
+          schema:
+            type: string
+        - name: bookId
+          in: path
+          description: Book Identifier
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Review object
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Review'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+      responses:
+        201:
+          description: If user has registered
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Review'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+  /api/v1/users:
+    post:
+      tags:
+        - user
+      summary: Create user in repository
+      description: User is created and persisted in database
+      operationId: createUser
+      requestBody:
+        description: User object
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        201:
+          description: User is created and persisted in database
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /api/v1/{userId}/users:
+    get:
+      tags:
+        - user
+      summary: Return a user by Id
+      description: Returns a registered user from repository
+      operationId: getUserById
+      parameters:
+        - name: userId
+          in: path
+          description: User Identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: If item exists in cart
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: Given Book (product) ID doesn't exist
+          content: {}
+    put:
+      tags:
+        - user
+      summary: Update user by Id
+      description: Update user by Id
+      operationId: updateUserById
+      parameters:
+        - name: userId
+          in: path
+          description: User Identifier
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: User object
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        204:
+          description: User updated successfully
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    delete:
+      tags:
+        - user
+      summary: Delete user by Id
+      description: Delete user from repository
+      operationId: deleteUserById
+      parameters:
+        - name: userId
+          in: path
+          description: User Identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        202:
+          description: Accepts the request, regardless of whether the specified item exists in the cart or not.
+  /api/v1/{userId}/authority:
+    put:
+      tags:
+        - user
+      summary: Add Authority to user
+      description: Will add authority to user in the repository
+      operationId: addUserAuthority
+      parameters:
+        - name: userId
+          in: path
+          description: User Identifier
+          required: true
+          schema:
+            type: string
+        - name: authority
+          in: query
+          description: User role
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: User updated successfully
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+components:
+  schemas:
+    Book:
+      description: Shopping Cart of the user
+      type: object
+      properties:
+        id:
+          description: Book Identifier
+          type: string
+        title:
+          description: title of book
+          type: string
+        isbn:
+          description: Book's isbn
+          type: string
+        author:
+          description: Author of book
+          type: string
+        edition:
+          description: Book's edition
+          type: string
+        reviews:
+          description: Collection of review
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+        tag:
+          description: Tags associated with the product
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+
+    Review:
+      description: Shopping Cart of the user
+      type: object
+      properties:
+        id:
+          description: Review Identifier
+          type: string
+        content:
+          description: Content of review by user
+          type: string
+        username:
+          description: Username of reviewer. Must be the email
+          type: string
+        book:
+          $ref: '#/components/schemas/Book'
+        rating:
+          description: Rating by User
+          type: integer
+    User:
+      description: An owner of a Book
+      type: object
+      properties:
+        id:
+          description: User Identifier
+          type: string
+        username:
+          description: user name
+          type: string
+        password:
+          description: user password
+          type: string
+        authorities:
+          description: user's authorities and roles
+          type: array
+          items:
+            $ref: '#/components/schemas/Authority'
+    Authority:
+      description: Describes the roles of the user
+      type: object
+      properties:
+        id:
+          description: Authority Identifier
+          type: string
+        users:
+          description: authorities for of all users
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    Tag:
+      description: Tag information
+      type: object
+      properties:
+        id:
+          description: Tag identifier
+          type: string
+        name:
+          description: Tag Name
+          type: string
