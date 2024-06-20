@@ -1,24 +1,29 @@
 package jsl.jayva.api.service.implementations;
 
 import jsl.jayva.api.entities.AuthorityEntity;
-import jsl.jayva.api.entities.UserEntity;
+import jsl.jayva.api.hateoas.UserEntityAssemblerSupport;
 import jsl.jayva.api.repository.UserEntityRepository;
 import jsl.jayva.api.service.UserEntityService;
-import jsl.jayva.model.Authority;
+import jsl.jayva.api.utility.UserEntityUtility;
 import jsl.jayva.model.User;
 import org.springframework.stereotype.Service;
+
+import static jsl.jayva.api.utility.UserEntityUtility.userEntityToUser;
+import static jsl.jayva.api.utility.UserEntityUtility.userToUserEntity;
 
 @Service
 public class UserEntityServiceImplementation implements UserEntityService {
     private final UserEntityRepository userEntityRepository;
+    private final UserEntityAssemblerSupport userEntityAssemblerSupport;
 
-    public UserEntityServiceImplementation(UserEntityRepository userEntityRepository) {
+    public UserEntityServiceImplementation(UserEntityRepository userEntityRepository, UserEntityAssemblerSupport userEntityAssemblerSupport) {
         this.userEntityRepository = userEntityRepository;
+        this.userEntityAssemblerSupport = userEntityAssemblerSupport;
     }
 
     @Override
     public User createUser(User user) {
-        return userEntityToUser(userEntityRepository.save(userToUserEntity(user)));
+        return userEntityAssemblerSupport.toModel(userEntityRepository.save(userToUserEntity(user)));
     }
 
     @Override
@@ -29,7 +34,7 @@ public class UserEntityServiceImplementation implements UserEntityService {
     @Override
     public User getUserById(String userId) {
         var userEntity = userEntityRepository.findById(userId);
-        return userEntity.map(this::userEntityToUser).orElse(null);
+        return userEntity.map(UserEntityUtility::userEntityToUser).orElse(null);
     }
 
     @Override
@@ -55,23 +60,4 @@ public class UserEntityServiceImplementation implements UserEntityService {
         return null;
     }
 
-    private User userEntityToUser(UserEntity userEntity) {
-        var user = new User();
-        var authority = userEntity.getAuthorities()
-                .stream().map(authorityEntity -> {
-                    var roles = new Authority();
-                    return roles.id(authorityEntity.getId());
-                }).toList();
-
-        return user.id(userEntity.getId())
-                .username(userEntity.getUsername())
-                .password(null)
-                .authorities(
-                        authority
-                );
-    }
-
-    private UserEntity userToUserEntity(User user) {
-        return UserEntity.init().username(user.getUsername()).password(user.getPassword()).enabled(1);
-    }
 }

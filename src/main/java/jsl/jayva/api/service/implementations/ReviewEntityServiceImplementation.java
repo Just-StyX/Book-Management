@@ -3,6 +3,7 @@ package jsl.jayva.api.service.implementations;
 import jsl.jayva.api.entities.BookEntity;
 import jsl.jayva.api.entities.ReviewEntity;
 import jsl.jayva.api.entities.UserEntity;
+import jsl.jayva.api.hateoas.ReviewEntityAssemblerSupport;
 import jsl.jayva.api.repository.BookEntityRepository;
 import jsl.jayva.api.repository.UserEntityRepository;
 import jsl.jayva.api.service.ReviewEntityService;
@@ -18,10 +19,13 @@ import static jsl.jayva.api.utility.BookEntityUtility.getListOfBooks;
 public class ReviewEntityServiceImplementation implements ReviewEntityService {
     private final UserEntityRepository userEntityRepository;
     private final BookEntityRepository bookEntityRepository;
+    private final ReviewEntityAssemblerSupport reviewEntityAssemblerSupport;
 
-    public ReviewEntityServiceImplementation(UserEntityRepository userEntityRepository, BookEntityRepository bookEntityRepository) {
+    public ReviewEntityServiceImplementation(UserEntityRepository userEntityRepository, BookEntityRepository bookEntityRepository,
+                                             ReviewEntityAssemblerSupport reviewEntityAssemblerSupport) {
         this.userEntityRepository = userEntityRepository;
         this.bookEntityRepository = bookEntityRepository;
+        this.reviewEntityAssemblerSupport = reviewEntityAssemblerSupport;
     }
 
     @Override
@@ -36,7 +40,7 @@ public class ReviewEntityServiceImplementation implements ReviewEntityService {
             bookEntityRepository.save(
                     foundBookEntity.reviews(ReviewEntity.init().content(review.getContent()).userId(userId).rating(review.getRating()))
             );
-            return review;
+            return reviewEntityAssemblerSupport.toModel(review);
         }
         return null;
     }

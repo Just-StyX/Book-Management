@@ -17,6 +17,7 @@ public class BookEntityAssemblerSupport extends RepresentationModelAssemblerSupp
         super(BookController.class, Book.class);
     }
 
+// TODO: Use Authentication to provide userId for the routes needed
     @Override
     public Book toModel(BookEntity bookEntity) {
         Book book = getBook(bookEntity);
